@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive CPU Simulator</title>
+    <!-- Tailwind CSS for layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Our Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- LEFT PANEL: INSTRUCTION BUILDER -->
+    <div class="glass-panel col-span-1">
+        <h2 class="text-xl font-bold mb-4 border-b pb-2"><i class="fas fa-tools text-purple-400"></i> Instruction Builder</h2>
+        
+        <div class="space-y-4 mb-6">
+            <div>
+                <label class="block text-sm font-semibold mb-1">Operation</label>
+                <select id="op-select" class="w-full">
+                    <option value="LOAD">LOAD (Read Memory)</option>
+                    <option value="STORE">STORE (Write Memory)</option>
+                    <option value="ADD">ADD (Math)</option>
+                    <option value="SUB">SUB (Math)</option>
+                    <option value="MUL">MUL (Math)</option>
+                    <option value="BEQ">BEQ (Branch if Equal)</option>
+                    <option value="BNE">BNE (Branch if Not Equal)</option>
+                    <option value="LOOP">LOOP (Jump to Step)</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Dest / Reg 1</label>
+                    <select id="reg1-select" class="w-full">
+                        <option value="R1">R1</option>
+                        <option value="R2">R2</option>
+                        <option value="R3">R3</option>
+                        <option value="R4">R4</option>
+                        <option value="-">None (-)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Src 1</label>
+                    <select id="src1-select" class="w-full">
+                        <option value="-">None (-)</option>
+                        <option value="R1">R1</option>
+                        <option value="R2">R2</option>
+                        <option value="R3">R3</option>
+                        <option value="R4">R4</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Src 2 / Value / Target Step</label>
+                <input type="text" id="val-input" placeholder="e.g., 4 or R2" class="w-full">
+            </div>
+            <button id="add-btn" class="btn w-full bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 rounded-lg border border-blue-200">
+                <i class="fas fa-plus"></i> Add to Queue
+            </button>
+        </div>
+
+        <h3 class="font-bold mb-2 text-sm text-gray-500 uppercase tracking-wider">Program Queue</h3>
+        <ul id="queue-list" class="space-y-2 text-sm max-h-60 overflow-y-auto pr-2"></ul>
+    </div>
+
+    <!-- MIDDLE PANEL: PIPELINE & METRICS -->
+    <div class="glass-panel col-span-1 flex flex-col">
+        <h2 class="text-xl font-bold mb-4 border-b pb-2"><i class="fas fa-project-diagram text-blue-400"></i> Pipeline Flowchart</h2>
+        
+        <div class="flex justify-center gap-4 mb-8">
+            <button id="step-btn" class="btn bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold border border-green-200">
+                <i class="fas fa-step-forward"></i> Step
+            </button>
+            <button id="auto-btn" class="btn bg-purple-100 text-purple-800 px-4 py-2 rounded-lg font-bold border border-purple-200">
+                <i class="fas fa-play"></i> Auto Play
+            </button>
+        </div>
+
+        <div class="space-y-4 flex-grow">
+            <div id="stage-F" class="stage-box"><div class="font-bold text-gray-400 text-xs">FETCH</div><div class="inst-text mt-1 text-sm font-mono">-</div></div>
+            <div class="text-center text-gray-300"><i class="fas fa-arrow-down"></i></div>
+            <div id="stage-D" class="stage-box"><div class="font-bold text-gray-400 text-xs">DECODE</div><div class="inst-text mt-1 text-sm font-mono">-</div></div>
+            <div class="text-center text-gray-300"><i class="fas fa-arrow-down"></i></div>
+            <div id="stage-E" class="stage-box"><div class="font-bold text-gray-400 text-xs">EXECUTE</div><div class="inst-text mt-1 text-sm font-mono">-</div></div>
+            <div class="text-center text-gray-300"><i class="fas fa-arrow-down"></i></div>
+            <div id="stage-M" class="stage-box"><div class="font-bold text-gray-400 text-xs">MEMORY</div><div class="inst-text mt-1 text-sm font-mono">-</div></div>
+            <div class="text-center text-gray-300"><i class="fas fa-arrow-down"></i></div>
+            <div id="stage-WB" class="stage-box"><div class="font-bold text-gray-400 text-xs">WRITE BACK</div><div class="inst-text mt-1 text-sm font-mono">-</div></div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: REGISTERS & MEMORY -->
+    <div class="glass-panel col-span-1">
+        <div class="flex justify-between items-center mb-4 border-b pb-2">
+            <h2 class="text-xl font-bold"><i class="fas fa-microchip text-green-400"></i> Hardware State</h2>
+            <label class="flex items-center space-x-2 text-sm cursor-pointer bg-white p-1 px-2 rounded border border-gray-200 shadow-sm">
+                <input type="checkbox" id="learning-mode" class="rounded text-purple-500">
+                <span class="font-bold text-purple-600">Quiz Mode</span>
+            </label>
+        </div>
+
+        <div class="mb-4 bg-gray-50 p-2 rounded-lg border text-sm flex justify-around">
+            <div>Zero Flag: <span id="flag-z" class="font-bold text-red-500">0</span></div>
+            <div>Equal Flag: <span id="flag-e" class="font-bold text-red-500">0</span></div>
+        </div>
+
+        <h3 class="font-bold mb-2 text-sm text-gray-500 uppercase tracking-wider">Registers</h3>
+        <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="register-box" id="reg-R1"><span class="font-bold text-gray-500 text-xs block">R1</span><span class="value font-mono">0</span></div>
+            <div class="register-box" id="reg-R2"><span class="font-bold text-gray-500 text-xs block">R2</span><span class="value font-mono">0</span></div>
+            <div class="register-box" id="reg-R3"><span class="font-bold text-gray-500 text-xs block">R3</span><span class="value font-mono">0</span></div>
+            <div class="register-box" id="reg-R4"><span class="font-bold text-gray-500 text-xs block">R4</span><span class="value font-mono">0</span></div>
+        </div>
+
+        <h3 class="font-bold mb-2 text-sm text-gray-500 uppercase tracking-wider">System Metrics</h3>
+        <div class="mb-4 bg-white p-3 rounded-lg border">
+            <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Storage Usage</span><span id="storage-pct">0%</span>
+            </div>
+            <div class="progress-bar-bg"><div id="storage-bar" class="progress-fill bg-blue-400" style="width: 0%;"></div></div>
+        </div>
+
+        <div class="mb-4 bg-white p-3 rounded-lg border">
+            <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Cache Hit Rate</span><span id="cache-pct">100%</span>
+            </div>
+            <div class="progress-bar-bg"><div id="cache-bar" class="progress-fill bg-green-400" style="width: 100%;"></div></div>
+        </div>
+
+        <h3 class="font-bold mb-2 text-sm text-gray-500 uppercase tracking-wider mt-6">Event Console</h3>
+        <div id="console-output" class="bg-gray-800 text-green-400 font-mono text-xs p-3 rounded-lg h-32 overflow-y-auto">
+            > Simulator initialized...<br>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Quiz Mode -->
+<div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-96 shadow-2xl">
+        <h3 class="text-xl font-bold mb-2 text-purple-600"><i class="fas fa-brain"></i> Fill in the Blank!</h3>
+        <p id="quiz-text" class="text-sm text-gray-600 mb-4">What will the new value be?</p>
+        <input type="number" id="quiz-answer" class="w-full border-2 border-purple-200 rounded p-2 mb-4 outline-none">
+        <div class="flex justify-end gap-2">
+            <button id="submit-quiz-btn" class="bg-purple-600 text-white px-4 py-2 rounded font-bold">Submit</button>
+        </div>
+    </div>
+</div>
+
+<!-- Chip the AI Tutor -->
+<div class="chip-container">
+    <div class="chat-box" id="chip-chat">
+        <div class="bg-indigo-500 text-white p-3 font-bold flex justify-between items-center">
+            <span>🤖 Chip the Tutor</span>
+            <button id="toggle-settings-btn" class="hover:text-indigo-200"><i class="fas fa-cog"></i></button>
+        </div>
+        
+        <div id="api-settings" class="hidden p-3 bg-indigo-50 border-b border-indigo-100 text-sm">
+            <label class="block font-bold mb-1 text-indigo-800">Gemini API Key</label>
+            <input type="password" id="api-key-input" class="w-full p-1 border rounded mb-2" placeholder="Paste your API key here...">
+            <button id="save-key-btn" class="bg-indigo-600 text-white px-3 py-1 rounded w-full font-bold">Save Key</button>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="msg chip">Hi! I'm Chip. I can help explain CPU architecture, caches, and pipelines. Ask me anything!</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chat-input-field" class="flex-grow border border-gray-300 rounded-l p-2 outline-none text-sm" placeholder="Ask Chip a question...">
+            <button id="send-msg-btn" class="bg-indigo-500 text-white px-4 rounded-r"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    
+    <!-- Cute SVG Robot -->
+    <svg id="chip-avatar" class="chip-avatar" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="25" y="30" width="50" height="45" rx="10" fill="#fcfbf9" stroke="#c7ceea" stroke-width="4"/>
+        <rect x="35" y="40" width="30" height="20" rx="5" fill="#2d3748"/>
+        <circle cx="42" cy="50" r="4" fill="#b5ead7"/>
+        <circle cx="58" cy="50" r="4" fill="#b5ead7"/>
+        <path d="M 50 20 L 50 30" stroke="#c7ceea" stroke-width="3"/>
+        <circle cx="50" cy="15" r="5" fill="#ffb7b2"/>
+        <path d="M 15 45 Q 5 45 10 60" stroke="#c7ceea" stroke-width="4" fill="none"/>
+        <path d="M 85 45 Q 95 45 90 60" stroke="#c7ceea" stroke-width="4" fill="none"/>
+    </svg>
+</div>
+
+<!-- Link our JS logic -->
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+:root {
+    --bg-color: #fcfbf9;
+    --panel-bg: rgba(255, 255, 255, 0.85);
+    --text-main: #4a4a4a;
+    --accent-1: #ffb7b2; /* Soft Coral */
+    --accent-2: #e2f0cb; /* Soft Green */
+    --accent-3: #b5ead7; /* Mint */
+    --accent-4: #c7ceea; /* Soft Purple */
+    --border-color: rgba(200, 200, 200, 0.3);
+}
+
+body {
+    background: linear-gradient(-45deg, #fdfbfb, #ebedee, #fdfcfb, #e2d1c3);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: var(--text-main);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.glass-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+.btn { transition: all 0.2s; cursor: pointer; }
+.btn:hover { transform: scale(1.05); }
+
+.stage-box {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    background: white;
+    position: relative;
+    transition: all 0.3s;
+}
+
+.active-stage {
+    border-color: var(--accent-4);
+    box-shadow: 0 0 15px var(--accent-4);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 10px var(--accent-4); }
+    50% { box-shadow: 0 0 20px var(--accent-4); }
+    100% { box-shadow: 0 0 10px var(--accent-4); }
+}
+
+.register-box {
+    background: white;
+    border-left: 4px solid var(--accent-3);
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    transition: background-color 0.3s;
+}
+
+.progress-bar-bg {
+    background-color: #eee;
+    border-radius: 999px;
+    height: 12px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.5s ease-out;
+}
+
+select, input {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px;
+    border-radius: 6px;
+    color: var(--text-main);
+    outline: none;
+}
+select:focus, input:focus { border-color: var(--accent-4); box-shadow: 0 0 0 2px rgba(199, 206, 234, 0.3); }
+
+/* Chip AI Character Styles */
+.chip-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.chip-avatar {
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0px 10px 10px rgba(0,0,0,0.2));
+    transition: transform 0.2s;
+}
+.chip-avatar:hover { transform: scale(1.1); }
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.chat-box {
+    width: 320px;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    border: 2px solid var(--accent-4);
+    display: none;
+    flex-direction: column;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.msg { padding: 10px; border-radius: 12px; max-width: 85%; line-height: 1.4; word-wrap: break-word; }
+.msg.chip { background: #f0f4ff; border: 1px solid #cce0ff; align-self: flex-start; border-bottom-left-radius: 2px;}
+.msg.user { background: #e2f0cb; border: 1px solid #b5ead7; align-self: flex-end; border-bottom-right-radius: 2px;}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #eee;
+    background: #fff;
+}
